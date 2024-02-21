@@ -120,11 +120,17 @@ module Bitcoin
         return false if buf.eof?
 
         if witness
-          in_size.times do |i|
-            witness_count = Protocol.unpack_var_int_from_io(buf)
-            witness_count.times do
-              size = Protocol.unpack_var_int_from_io(buf)
-              @in[i].script_witness.stack << buf.read(size)
+          if Bitcoin.litecoin? && (@flag & 8).positive?
+            # litecoin flags the MWEB transaction using segwit version flag 8
+            # this transaction can only appear as the last transaction on a block,
+            # so we can skip the witness contents (witness is non standard).
+          else
+            in_size.times do |i|
+              witness_count = Protocol.unpack_var_int_from_io(buf)
+              witness_count.times do
+                size = Protocol.unpack_var_int_from_io(buf)
+                @in[i].script_witness.stack << buf.read(size)
+              end
             end
           end
         end
