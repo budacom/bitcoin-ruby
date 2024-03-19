@@ -4,14 +4,14 @@
 #
 #  examples/connect.rb [testnet]
 #
-# see Bitcoin::Connection and Bitcoin::Protocol.
+# see BitcoinOld::Connection and BitcoinOld::Protocol.
 
 $:.unshift( File.expand_path("../../lib", __FILE__) )
-require 'bitcoin/connection'
+require 'bitcoin_old/connection'
 
-Bitcoin::network = ARGV[0] || :bitcoin
+BitcoinOld::network = ARGV[0] || :bitcoin
 
-class RawJSON_Connection < Bitcoin::Connection
+class RawJSON_Connection < BitcoinOld::Connection
   def on_tx(tx)
     p ['tx', tx.hash, Time.now]
     # puts tx.to_json

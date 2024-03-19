@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../lib/bitcoin'
+require_relative '../lib/bitcoin_old'
 
 # Used for loading some fixtures
 require 'json'
@@ -8,12 +8,12 @@ require 'json'
 require 'simplecov'
 
 SimpleCov.start do
-  add_group('Bitcoin') do |file|
-    ['bitcoin.rb', 'opcodes.rb', 'script.rb', 'key.rb'].include?(
+  add_group('BitcoinOld') do |file|
+    ['bitcoin_old.rb', 'opcodes.rb', 'script.rb', 'key.rb'].include?(
       file.filename.split('/').last
     )
   end
-  add_group 'Protocol', 'lib/bitcoin/protocol'
+  add_group 'Protocol', 'lib/bitcoin_old/protocol'
   add_group('Utilities') do |file|
     ['logger.rb', 'openssl.rb'].include?(
       file.filename.split('/').last
@@ -100,10 +100,10 @@ RSpec.configure do |config|
   # Include fixture helpers in all tests
   config.include FixtureHelpers
   config.include BlockHelpers
-  config.include Bitcoin::Builder
+  config.include BitcoinOld::Builder
 
   # Clear the network back to bitcoin mainnet before each test
   config.before(:each) do
-    Bitcoin.network = :bitcoin
+    BitcoinOld.network = :bitcoin
   end
 end

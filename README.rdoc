@@ -4,12 +4,12 @@ This is a ruby library for interacting with the bitcoin protocol/network.
 
 Some of the main features are:
 
-* Bitcoin::Key provides a high-level API for creating and handling keys/addresses
-* Bitcoin::Util provides the basic bitcoin utility functions for base58, ECC, etc.
-* Bitcoin::Protocol can parse/create all protocol messages
-* Bitcoin::Script implementation, create/run scripts and verify signatures
-* Bitcoin::Builder provides a high-level API for creating transactions (and blocks)
-* Bitcoin::Litecoin implements all the litecoin-specific differences
+* BitcoinOld::Key provides a high-level API for creating and handling keys/addresses
+* BitcoinOld::Util provides the basic bitcoin utility functions for base58, ECC, etc.
+* BitcoinOld::Protocol can parse/create all protocol messages
+* BitcoinOld::Script implementation, create/run scripts and verify signatures
+* BitcoinOld::Builder provides a high-level API for creating transactions (and blocks)
+* BitcoinOld::Litecoin implements all the litecoin-specific differences
 
 == Compatible with...
 
@@ -41,38 +41,38 @@ see EXAMPLES.
 
 === Keys/Addresses
 
-Generate a Bitcoin::Key
+Generate a BitcoinOld::Key
 
- key = Bitcoin::Key.generate
+ key = BitcoinOld::Key.generate
  key.priv
  key.pub
  key.addr
  sig = key.sign("data")
  key.verify("data", sig)
- recovered_key = Bitcoin::Key.from_base58(key.to_base58)
+ recovered_key = BitcoinOld::Key.from_base58(key.to_base58)
 
 === Blocks / Transactions parsing
 
-Parse a Bitcoin::Protocol::Block
+Parse a BitcoinOld::Protocol::Block
 
  raw_block = File.open('spec/bitcoin/fixtures/rawblock-0.bin', 'rb') {|f| f.read}
- blk = Bitcoin::Protocol::Block.new(raw_block)
+ blk = BitcoinOld::Protocol::Block.new(raw_block)
  blk.hash #=> 00000000839a8e6886ab5951d76f411475428afc90947ee320161bbf18eb6048
  blk.tx.count #=> 1
  blk.to_hash #=> ...
- Bitcoin::Protocol::Block.from_json( blk.to_json )
+ BitcoinOld::Protocol::Block.from_json( blk.to_json )
 
-Parse a Bitcoin::Protocol::Tx
+Parse a BitcoinOld::Protocol::Tx
 
  raw_tx = File.open('spec/bitcoin/fixtures/rawtx-01.bin', 'rb') {|f| f.read}
- tx = Bitcoin::Protocol::Tx.new(raw_tx)
+ tx = BitcoinOld::Protocol::Tx.new(raw_tx)
  tx.hash #=> 6e9dd16625b62cfcd4bf02edb89ca1f5a8c30c4b1601507090fb28e59f2d02b4
  tx.in.size #=> 1
  tx.out.size #=> 2
  tx.to_hash #=> ...
- Bitcoin::Protocol::Tx.from_json( tx.to_json )
+ BitcoinOld::Protocol::Tx.from_json( tx.to_json )
 
- Bitcoin::Script.new(tx.out[0].pk_script).to_string
+ BitcoinOld::Script.new(tx.out[0].pk_script).to_string
  #=> "OP_DUP OP_HASH160 b2e21c1db922e3bdc529de7b38b4c401399e9afd OP_EQUALVERIFY OP_CHECKSIG"
 
 === Transaction verification / Scripts
@@ -81,8 +81,8 @@ Get the matching transactions (in this example tx1 is the spending transaction)
 
  rawtx1 = File.open("spec/bitcoin/fixtures/rawtx-f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16.bin", 'rb') {|f| f.read}
  rawtx2 = File.open("spec/bitcoin/fixtures/rawtx-0437cd7f8525ceed2324359c2d0ba26006d92d856a9c20fa0241106ee5a597c9.bin", 'rb') {|f| f.read}
- tx1 = Bitcoin::Protocol::Tx.new(rawtx1)
- tx2 = Bitcoin::Protocol::Tx.new(rawtx2)
+ tx1 = BitcoinOld::Protocol::Tx.new(rawtx1)
+ tx2 = BitcoinOld::Protocol::Tx.new(rawtx2)
 
 Then simply ask the transaction to verify an input
 
@@ -90,15 +90,15 @@ Then simply ask the transaction to verify an input
 
 === Scripts
 
-If you want to control the Bitcoin::Script yourself, you can do so
+If you want to control the BitcoinOld::Script yourself, you can do so
 
  txin = tx1.in.first
  txout = tx2.out[txin.prev_out_index]
- script = Bitcoin::Script.new(txin.script_sig + txout.pk_script)
+ script = BitcoinOld::Script.new(txin.script_sig + txout.pk_script)
 
  result = script.run do |pubkey, sig, hash_type|
    hash = tx1.signature_hash_for_input(0, nil, txout.pk_script)
-   Bitcoin.verify_signature(hash, sig, pubkey.unpack("H*")[0])
+   BitcoinOld.verify_signature(hash, sig, pubkey.unpack("H*")[0])
  end
  result #=> true
 
@@ -108,10 +108,10 @@ You need to know the previous output you want to spend (tx hash and output index
 as well as the private key for the address required to sign for it.
 
  # use testnet so you don't accidentally blow your whole money!
- Bitcoin.network = :testnet3
+ BitcoinOld.network = :testnet3
  
  # make the DSL methods available in your scope
- include Bitcoin::Builder
+ include BitcoinOld::Builder
  
  # the previous transaction that has an output to your address
  prev_hash = "6c44b284c20fa22bd69c57a9dbff91fb71deddc8c54fb2f5aa41fc78c96c1ad1"
@@ -120,10 +120,10 @@ as well as the private key for the address required to sign for it.
  prev_out_index = 0
  
  # fetch the tx from whereever you like and parse it
- prev_tx = Bitcoin::P::Tx.from_json(open("http://test.webbtc.com/tx/#{prev_hash}.json"))
+ prev_tx = BitcoinOld::P::Tx.from_json(open("http://test.webbtc.com/tx/#{prev_hash}.json"))
  
  # the key needed to sign an input that spends the previous output
- key = Bitcoin::Key.from_base58("92ZRu28m2GHSKaaF2W7RswJ2iJYpTzVhBaN6ZLs7TENCs4b7ML8")
+ key = BitcoinOld::Key.from_base58("92ZRu28m2GHSKaaF2W7RswJ2iJYpTzVhBaN6ZLs7TENCs4b7ML8")
  
  # create a new transaction (and sign the inputs)
  new_tx = build_tx do |t|

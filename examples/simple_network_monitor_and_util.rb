@@ -1,16 +1,16 @@
 $:.unshift( File.expand_path("../../lib", __FILE__) )
 require 'eventmachine'
-require 'bitcoin'
+require 'bitcoin_old'
 require 'socket'
 
-class Bitcoin::Protocol::Parser; def log; stub=Object.new; def stub.method_missing(*a); end; stub; end; end
+class BitcoinOld::Protocol::Parser; def log; stub=Object.new; def stub.method_missing(*a); end; stub; end; end
 
 
 module SimpleNode
   class Connection < EM::Connection
 
     def on_ping(nonce)
-      send_data(Bitcoin::Protocol.pong_pkt(nonce)) if nonce
+      send_data(BitcoinOld::Protocol.pong_pkt(nonce)) if nonce
     end
 
     def on_reject(reject)
@@ -57,16 +57,16 @@ module SimpleNode
       EM.add_timer(0.5){
         if @ask_block
           log.info { "ask for @ask_block: #{@ask_block}" }
-          send_data Bitcoin::Protocol.getdata_pkt(:block, [htb(@ask_block)])
+          send_data BitcoinOld::Protocol.getdata_pkt(:block, [htb(@ask_block)])
         else
           if @ask_tx
             log.info { "ask for @ask_tx: #{@ask_tx}" }
-            send_data Bitcoin::Protocol.getdata_pkt(:tx, [htb(@ask_tx)])
+            send_data BitcoinOld::Protocol.getdata_pkt(:tx, [htb(@ask_tx)])
           end
         end
         if @send_tx
-          tx = Bitcoin::P::Tx.from_json(File.read(@send_tx))
-          send_data(Bitcoin::Protocol.pkt('tx', tx.to_payload))
+          tx = BitcoinOld::P::Tx.from_json(File.read(@send_tx))
+          send_data(BitcoinOld::Protocol.pkt('tx', tx.to_payload))
           p [:sent, tx.hash]
         end
       }
@@ -78,22 +78,22 @@ module SimpleNode
     def on_inv_transaction(hash)
       log.info { "peer told us about transaction: #{hth(hash)}" }
       log.info { "asking peer for transaction: #{hth(hash)}" }
-      send_data Bitcoin::Protocol.getdata_pkt(:tx, [hash])
+      send_data BitcoinOld::Protocol.getdata_pkt(:tx, [hash])
     end
 
     def on_inv_block(hash)
       log.info { "peer told us about block: #{hth(hash)}" }
       log.info { "asking peer for block: #{hth(hash)}" }
-      send_data Bitcoin::Protocol.getdata_pkt(:block, [hash])
+      send_data BitcoinOld::Protocol.getdata_pkt(:block, [hash])
     end
 
     def on_handshake_begin
       log.info { "handshake started" }
 
-      version = Bitcoin::Protocol::Version.new({
+      version = BitcoinOld::Protocol::Version.new({
         :user_agent => "/Satoshi:0.8.1/",
         :last_block => 0,
-        :from       => "127.0.0.1:#{Bitcoin.network[:default_port]}",
+        :from       => "127.0.0.1:#{BitcoinOld.network[:default_port]}",
         :to         => "#{@host}:#{@port}",
       })
 
@@ -104,14 +104,14 @@ module SimpleNode
     def on_version(version)
       @version ||= version
       log.info { "received version:  Version:%d (%s)  Block:%d" % version.fields.values_at(:version, :user_agent, :last_block) }
-      send_data( Bitcoin::Protocol.verack_pkt )
+      send_data( BitcoinOld::Protocol.verack_pkt )
       on_handshake_complete
     end
 
     def initialize(host, port, node=nil, opts={})
       set_host(host, port)
       @node   = node
-      @parser = Bitcoin::Protocol::Parser.new( self )
+      @parser = BitcoinOld::Protocol::Parser.new( self )
 
       @args = opts
       @ask_tx, @ask_block, @send_tx = opts.values_at(:ask_tx, :ask_block, :send_tx)
@@ -125,8 +125,8 @@ module SimpleNode
     def log
       return @log if @log
       return (@log = (stub=Object.new; def stub.method_missing(*a); end; stub)) if @args[:nolog]
-      @logger ||= Bitcoin::Logger.create(:network, :info) unless @node.respond_to?(:log)
-      @log = Bitcoin::Logger::LogWrapper.new("#@host:#@port", @logger || @node.log)
+      @logger ||= BitcoinOld::Logger.create(:network, :info) unless @node.respond_to?(:log)
+      @log = BitcoinOld::Logger::LogWrapper.new("#@host:#@port", @logger || @node.log)
     end
 
     def hth(h); h.unpack("H*")[0]; end
@@ -138,11 +138,11 @@ module SimpleNode
     end
 
     def self.connect_random_from_dns(seeds=[], count=1, *args)
-      seeds = Bitcoin.network[:dns_seeds] unless seeds.any?
+      seeds = BitcoinOld.network[:dns_seeds] unless seeds.any?
       if seeds.any?
         seeds.sample(count).map{|dns|
           host = IPSocket.getaddress(dns)
-          connect(host, Bitcoin.network[:default_port], *args)
+          connect(host, BitcoinOld.network[:default_port], *args)
         }
       else
         raise "No DNS seeds available. Provide IP, configure seeds, or use different network."
@@ -150,7 +150,7 @@ module SimpleNode
     end
 
     def self.connect_known_nodes(count=1)
-      connect_random_from_dns(Bitcoin.network[:known_nodes], count)
+      connect_random_from_dns(BitcoinOld.network[:known_nodes], count)
     end
   end
 end
@@ -166,11 +166,11 @@ if $0 == __FILE__
     set_project:  ARGV.find{|a| a[/project=(.+)/, 1] } && $1,
     callback:  proc{|i|
                  case i
-                 when Bitcoin::Protocol::Block
+                 when BitcoinOld::Protocol::Block
                    puts "INFO  network: SAVING @ask_block: #{i.hash}"
                    File.open("block-#{i.hash}.bin", 'wb'){|f| f.print i.payload }
                    File.open("block-#{i.hash}.json", 'wb'){|f| f.print i.to_json }
-                 when Bitcoin::Protocol::Tx
+                 when BitcoinOld::Protocol::Tx
                    puts "INFO  network: SAVING @ask_tx: #{i.hash}"
                    File.open("tx-#{i.hash}.bin", 'wb'){|f| f.print i.payload }
                    File.open("tx-#{i.hash}.json", 'wb'){|f| f.print i.to_json }
@@ -182,8 +182,8 @@ if $0 == __FILE__
   
   EM.run do
     if args[:set_project]
-      Bitcoin.network = args[:set_project].to_sym
-      p Bitcoin.network_project
+      BitcoinOld.network = args[:set_project].to_sym
+      p BitcoinOld.network_project
     end
     if args[:use_node]
       SimpleNode::Connection.connect_random_from_dns([args[:use_node]], 1, nil, args)

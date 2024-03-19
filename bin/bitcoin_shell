@@ -1,11 +1,11 @@
 #!/usr/bin/env ruby
 $:.unshift( File.expand_path("../../lib", __FILE__) )
-require 'bitcoin'
+require 'bitcoin_old'
 
-include Bitcoin
-include Bitcoin::Util
+include BitcoinOld
+include BitcoinOld::Util
 
-Bitcoin.network = ARGV.shift || :bitcoin
+BitcoinOld.network = ARGV.shift || :bitcoin
 
 require 'irb'
 require 'irb/completion'

@@ -15,6 +15,6 @@ module FixtureHelpers
   # @param relative_path [String] relative path to fixture.
   # @return [String] binary data read from the fixture file.
   def fixtures_file(relative_path)
-    Bitcoin::Protocol.read_binary_file(fixtures_path(relative_path))
+    BitcoinOld::Protocol.read_binary_file(fixtures_path(relative_path))
   end
 end

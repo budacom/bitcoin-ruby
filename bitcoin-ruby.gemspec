@@ -1,10 +1,10 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "bitcoin/version"
+require "bitcoin_old/version"
 
 Gem::Specification.new do |s|
   s.name        = "bitcoin-ruby"
-  s.version     = Bitcoin::VERSION
+  s.version     = BitcoinOld::VERSION
   s.authors     = ["lian"]
   s.email       = ["meta.rb@gmail.com"]
   s.homepage    = ""

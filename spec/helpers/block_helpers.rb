@@ -3,7 +3,7 @@
 # Helpers for block construction using the builder abstraction.
 module BlockHelpers
   # Network configuration where mining a block is possible
-  Bitcoin::NETWORKS[:spec] = {
+  BitcoinOld::NETWORKS[:spec] = {
     project: :bitcoin,
     magic_head: 'spec',
     address_version: '6f',
@@ -29,13 +29,13 @@ module BlockHelpers
   def create_block(prev,
                    store = true,
                    transaction = [],
-                   key = Bitcoin::Key.generate,
+                   key = BitcoinOld::Key.generate,
                    coinbase_value = 50e8,
                    opts = {})
     @store ||= nil
-    opts[:bits] ||= Bitcoin.network[:proof_of_work_limit]
+    opts[:bits] ||= BitcoinOld.network[:proof_of_work_limit]
 
-    block = build_block(Bitcoin.decode_compact_bits(opts[:bits])) do |b|
+    block = build_block(BitcoinOld.decode_compact_bits(opts[:bits])) do |b|
       b.time opts[:time] if opts[:time]
       b.prev_block prev
       b.tx do |t|

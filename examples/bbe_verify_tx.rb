@@ -4,17 +4,17 @@
 #
 #  examples/bbe_verify_tx.rb <tx hash> [testnet]
 #  examples/bbe_verify_tx.rb f4184fc596403b9d638783cf57adfe4c75c605f6356fbc91338530e9831e9e16
-# see Bitcoin::P::Tx and Bitcoin::Script.
+# see BitcoinOld::P::Tx and BitcoinOld::Script.
 
 $:.unshift(File.dirname(__FILE__) + "/../lib")
-require 'bitcoin'
+require 'bitcoin_old'
 require 'open-uri'
 
 tx_hash = ARGV[0]
 $testnet = ARGV.select{|i| i.downcase == 'testnet' }[0] ? true : false
 $use_coinbase_bbe = ARGV.select{|i| i.downcase == 'coinbase' }[0] ? true : false
 
-# fetch transaction from bbe as json and deserialize into Bitcoin::Protocol::Tx object
+# fetch transaction from bbe as json and deserialize into BitcoinOld::Protocol::Tx object
 def get_tx(hash)
   if $use_coinbase_bbe && !$testnet
     url = "https://coinbase.com/network/tx/%s.json" % [hash]
@@ -22,7 +22,7 @@ def get_tx(hash)
     url = "http://blockexplorer.com/%srawtx/%s" % [$testnet ? 'testnet/' : '',  hash]
   end
   json = open(url).read
-  Bitcoin::Protocol::Tx.from_json(json)
+  BitcoinOld::Protocol::Tx.from_json(json)
 rescue
   nil
 end
